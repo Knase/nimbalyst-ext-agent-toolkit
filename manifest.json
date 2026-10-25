@@ -1,0 +1,40 @@
+{
+  "id": "dev.local.agent-toolkit",
+  "name": "Agent Toolkit",
+  "version": "0.1.0",
+  "description": "Favorite agent commands: synced into the composer's Actions menu, a Cmd+Shift+B launcher, and one settings page.",
+  "author": "Svyat",
+  "main": "dist/index.js",
+  "styles": "dist/index.css",
+  "apiVersion": "1.0.0",
+  "permissions": {
+    "filesystem": true,
+    "ai": true
+  },
+  "contributions": {
+    "panels": [
+      {
+        "id": "launcher",
+        "title": "Agent launcher",
+        "icon": "bolt",
+        "placement": "floating",
+        "order": 70,
+        "tooltip": "Search favorite agent commands and run them in a new session (Cmd+Shift+B)."
+      }
+    ],
+    "keybindings": [
+      { "key": "cmd+shift+b", "command": "dev.local.agent-toolkit.launcher.toggle" }
+    ],
+    "settingsRoutes": [
+      {
+        "id": "toolkit",
+        "scope": "project",
+        "label": "Agent Toolkit",
+        "group": "Project",
+        "icon": "bolt",
+        "order": 90,
+        "component": "ToolkitSettings"
+      }
+    ]
+  }
+}
