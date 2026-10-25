@@ -1,6 +1,6 @@
 {
   "name": "nimbalyst-agent-toolkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agent Toolkit: favorite agent commands, launcher and Actions sync for Nimbalyst",
   "private": true,
   "type": "module",

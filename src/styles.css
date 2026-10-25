@@ -1,7 +1,7 @@
 /* Agent Toolkit. Colours come from the host's --nim-* theme variables. */
 .at-root, .at-settings { color: var(--nim-text); font-size: 13px; }
 .at-root * , .at-settings * { box-sizing: border-box; }
-.at-root { display: flex; flex-direction: column; gap: 8px; padding: 10px; width: 100%; height: 100%; max-height: 70vh; background: var(--nim-bg); }
+.at-root { display: flex; flex-direction: column; gap: 8px; padding: 10px; width: 100%; height: 100%; min-height: 240px; background: var(--nim-bg); }
 .at-search, .at-args, .at-input { background: var(--nim-bg-secondary); color: var(--nim-text); border: 1px solid var(--nim-border); border-radius: 6px; padding: 6px 10px; font: inherit; }
 .at-search { font-size: 15px; }
 .at-search:focus, .at-args:focus, .at-input:focus { outline: none; border-color: var(--nim-border-focus, var(--nim-primary)); }
