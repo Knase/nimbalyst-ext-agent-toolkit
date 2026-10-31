@@ -1,9 +1,9 @@
-import { jsxs as h, jsx as i, Fragment as P } from "react/jsx-runtime";
-import { useState as N, useRef as R, useMemo as O, useEffect as M } from "react";
-function I(e, a, s) {
-  const r = a.trim();
+import { jsxs as p, jsx as r, Fragment as W } from "react/jsx-runtime";
+import { useState as k, useRef as L, useMemo as F, useEffect as T } from "react";
+function K(e, t, s) {
+  const c = t.trim();
   let o = e.command.trim();
-  if (/\{args\}/.test(o) ? o = o.replace(/\{args\}/g, r) : r && (o = `${o} ${r}`), o = o.replace(/[ \t]+$/gm, "").trim(), s === "natural") {
+  if (/\{args\}/.test(o) ? o = o.replace(/\{args\}/g, c) : c && (o = `${o} ${c}`), o = o.replace(/[ \t]+$/gm, "").trim(), s === "natural") {
     const l = /^\/([A-Za-z0-9_:.-]+)(?:\s+([\s\S]*))?$/.exec(o);
     if (l) {
       const d = (l[2] ?? "").trim();
@@ -12,46 +12,46 @@ function I(e, a, s) {
   }
   return o;
 }
-function H(e) {
-  const a = e.split(":")[0];
-  return a === "claude-code" || a === "claude" || a === "openai" || a === "openai-codex" ? a : void 0;
+function J(e) {
+  const t = e.split(":")[0];
+  return t === "claude-code" || t === "claude" || t === "openai" || t === "openai-codex" ? t : void 0;
 }
-function V(e, a) {
-  const s = a.trim().toLowerCase();
+function Q(e, t) {
+  const s = t.trim().toLowerCase();
   if (!s) return e;
-  const r = [];
+  const c = [];
   return e.forEach((o, l) => {
-    const d = Math.max(K(o.name.toLowerCase(), s) * 2, K(o.command.toLowerCase(), s));
-    d > 0 && r.push({ item: o, score: d, index: l });
-  }), r.sort((o, l) => l.score - o.score || o.index - l.index).map((o) => o.item);
+    const d = Math.max(B(o.name.toLowerCase(), s) * 2, B(o.command.toLowerCase(), s));
+    d > 0 && c.push({ item: o, score: d, index: l });
+  }), c.sort((o, l) => l.score - o.score || o.index - l.index).map((o) => o.item);
 }
-function K(e, a) {
-  const s = e.indexOf(a);
+function B(e, t) {
+  const s = e.indexOf(t);
   if (s >= 0) return 100 - Math.min(s, 50) + (s === 0 ? 20 : 0);
-  let r = 0, o = 0;
-  for (const l of a) {
-    const d = e.indexOf(l, r);
+  let c = 0, o = 0;
+  for (const l of t) {
+    const d = e.indexOf(l, c);
     if (d < 0) return 0;
-    o += d - r, r = d + 1;
+    o += d - c, c = d + 1;
   }
   return Math.max(1, 40 - o);
 }
-function Y(e) {
-  const a = /* @__PURE__ */ new Set();
+function X(e) {
+  const t = /* @__PURE__ */ new Set();
   return e.map((s) => {
-    for (const r of s.toLowerCase())
-      if (/[a-z]/.test(r) && !a.has(r))
-        return a.add(r), r;
+    for (const c of s.toLowerCase())
+      if (/[a-z]/.test(c) && !t.has(c))
+        return t.add(c), c;
     return null;
   });
 }
-const Z = {
+const ee = (e) => /\{args\}/.test(e), te = {
   favorites: [],
   launcherModel: "claude-code:sonnet",
   commandMode: "slash",
   syncActions: !0
-}, G = "toolkit.v1", z = "favorites.project.v1", _ = "★";
-function L(e = {}) {
+}, U = "toolkit.v1", q = "favorites.project.v1", G = "★";
+function I(e = {}) {
   return {
     id: `fav-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     name: "New favorite",
@@ -63,324 +63,367 @@ function L(e = {}) {
     ...e
   };
 }
-function F(e) {
-  const a = e ?? {};
+function _(e) {
+  const t = e ?? {};
   return {
-    ...Z,
-    ...a,
-    favorites: Array.isArray(a.favorites) ? a.favorites.map((s) => ({ ...L(), ...s })) : []
+    ...te,
+    ...t,
+    favorites: Array.isArray(t.favorites) ? t.favorites.map((s) => ({ ...I(), ...s })) : []
   };
 }
-const J = [
+const ne = [
   { name: "Compact", command: "/compact", launch: "same-session" },
   { name: "BMAD help", command: "/bmad-help", launch: "new-session" },
   { name: "Code review", command: "/bmad-code-review {args}", launch: "new-session" },
   { name: "Sprint status", command: "/bmad-sprint-status", launch: "new-session" }
 ];
-function Q(e) {
-  const a = [{ heading: null, lines: [] }];
-  let s = !1;
-  for (const r of e.split(`
-`)) {
-    /^\s*```/.test(r) && (s = !s);
-    const o = s ? null : /^##\s+(.+?)\s*\r?$/.exec(r);
-    o ? a.push({ heading: o[1], lines: [r] }) : a[a.length - 1].lines.push(r);
-  }
-  return a;
-}
-const X = (e) => e.heading !== null && e.heading.startsWith(_), ee = /^[a-z][a-z0-9_-]*:\S+$/i;
-function te(e) {
-  let a = !1;
-  return e.split(`
-`).map((s) => (/^\s*```/.test(s) && (a = !a), !a && /^##\s/.test(s) ? `#${s}` : s)).join(`
-`);
-}
-function ne(e, a) {
-  const s = e.name.replace(/\s+/g, " ").trim(), r = I(e, "", a);
-  if (!s || !r) return null;
-  const o = [`## ${_} ${s}`, `launch: ${e.launch}`];
-  return e.model && ee.test(e.model.trim()) && o.push(`model: ${e.model.trim()}`), o.push("foreground: true", `autoSubmit: ${e.autoSubmit}`, `worktree: ${e.worktree}`, "", te(r), ""), o.join(`
-`);
-}
 function ae(e) {
-  return `${_} ${e.name.replace(/\s+/g, " ").trim()}`;
-}
-function se(e, a, s) {
-  const r = [], o = /* @__PURE__ */ new Set();
-  for (const f of a) {
-    const g = ae(f).toLowerCase();
-    if (o.has(g)) continue;
-    const k = ne(f, s);
-    k && (o.add(g), r.push(k));
+  const t = [{ heading: null, lines: [] }];
+  let s = !1;
+  for (const c of e.split(`
+`)) {
+    /^\s*```/.test(c) && (s = !s);
+    const o = s ? null : /^##\s+(.+?)\s*\r?$/.exec(c);
+    o ? t.push({ heading: o[1], lines: [c] }) : t[t.length - 1].lines.push(c);
   }
-  if (e === null && r.length === 0) return null;
-  const l = Q(e ?? ""), d = [];
-  let v = !1;
-  const p = r.join(`
+  return t;
+}
+const se = (e) => e.heading !== null && e.heading.startsWith(G);
+function oe(e) {
+  let t = !1;
+  return e.split(`
+`).map((s) => (/^\s*```/.test(s) && (t = !t), !t && /^##\s/.test(s) ? `#${s}` : s)).join(`
 `);
-  for (const f of l) {
-    if (X(f)) {
-      !v && p && (d.push(p), v = !0);
+}
+function re(e, t) {
+  const s = e.name.replace(/\s+/g, " ").trim(), c = K(e, "", t);
+  return !s || !c ? null : [`## ${G} ${s}`, "launch: same-session", "foreground: true", "autoSubmit: false", "", oe(c), ""].join(`
+`);
+}
+function ce(e) {
+  return `${G} ${e.name.replace(/\s+/g, " ").trim()}`;
+}
+function ie(e, t, s) {
+  const c = [], o = /* @__PURE__ */ new Set();
+  for (const w of t) {
+    const u = ce(w).toLowerCase();
+    if (o.has(u)) continue;
+    const y = re(w, s);
+    y && (o.add(u), c.push(y));
+  }
+  if (e === null && c.length === 0) return null;
+  const l = ae(e ?? ""), d = [];
+  let b = !1;
+  const g = c.join(`
+`);
+  for (const w of l) {
+    if (se(w)) {
+      !b && g && (d.push(g), b = !0);
       continue;
     }
-    d.push(f.lines.join(`
+    d.push(w.lines.join(`
 `));
   }
-  let m = d.join(`
+  let f = d.join(`
 `);
-  return !v && p && (m = m.replace(/\s*$/, ""), m = (m ? m + `
+  return !b && g && (f = f.replace(/\s*$/, ""), f = (f ? f + `
 
-` : "") + p), m && !m.endsWith(`
-`) && (m += `
-`), m = m.replace(/\n{3,}/g, `
+` : "") + g), f && !f.endsWith(`
+`) && (f += `
+`), f = f.replace(/\n{3,}/g, `
 
-`), m === e ? null : m;
+`), f === e ? null : f;
 }
-let T = null;
-const B = (e) => {
-  T = e;
-}, x = (e) => e instanceof Error ? e.message : String(e);
-function U(e) {
+let P = null;
+const z = (e) => {
+  P = e;
+}, E = (e) => e instanceof Error ? e.message : String(e);
+function V(e) {
   try {
-    return F(e.getGlobal(G));
+    return _(e.getGlobal(U));
   } catch {
-    return F(void 0);
+    return _(void 0);
   }
 }
-function W(e) {
+function Y(e) {
   try {
-    const a = e.get(z);
-    return F({ favorites: Array.isArray(a) ? a : [] }).favorites;
+    const t = e.get(q);
+    return _({ favorites: Array.isArray(t) ? t : [] }).favorites;
   } catch {
     return [];
   }
 }
-async function oe(e, a) {
-  await e.setGlobal(G, a);
+async function le(e, t) {
+  await e.setGlobal(U, t);
 }
-async function ce(e, a) {
-  await e.set(z, a);
+async function ue(e, t) {
+  await e.set(q, t);
 }
-const re = (e) => `${e.replace(/[\\/]+$/, "")}/nimbalyst-local/ai-actions.md`;
-async function q(e, a, s, r = a.syncActions) {
-  if (!T) throw new Error("Agent Toolkit is not activated yet.");
-  const o = T.filesystem, l = re(e), d = await o.fileExists(l) ? await o.readFile(l) : null, v = r ? [...a.favorites, ...s] : [], p = se(d, v, a.commandMode);
-  return p === null ? { changed: !1, path: l } : (await o.writeFile(l, p), { changed: !0, path: l });
+const de = (e) => `${e.replace(/[\\/]+$/, "")}/nimbalyst-local/ai-actions.md`;
+async function Z(e, t, s, c = t.syncActions) {
+  if (!P) throw new Error("Agent Toolkit is not activated yet.");
+  const o = P.filesystem, l = de(e), d = await o.fileExists(l) ? await o.readFile(l) : null, b = c ? [...t.favorites, ...s] : [], g = ie(d, b, t.commandMode);
+  return g === null ? { changed: !1, path: l } : (await o.writeFile(l, g), { changed: !0, path: l });
 }
-function ie(e, a, s, r) {
-  const o = T?.ai;
+function me(e, t, s, c) {
+  const o = P?.ai;
   if (!o) throw new Error("The ai permission is not available to this extension.");
-  const l = e.model.trim() || s.launcherModel.trim(), d = l ? H(l) : void 0;
+  const l = e.model.trim() || s.launcherModel.trim(), d = l ? J(l) : void 0;
   o.sendPrompt({
-    prompt: I(e, a, s.commandMode),
+    prompt: K(e, t, s.commandMode),
     sessionName: e.name,
     ...l ? { model: l } : {},
     ...d ? { provider: d } : {}
-  }).catch((v) => r(x(v)));
+  }).catch((b) => c(E(b)));
 }
-function le({ host: e }) {
-  const [a] = N(() => U(e.storage)), [s] = N(() => W(e.storage)), [r, o] = N(""), [l, d] = N(""), [v, p] = N(0), [m, f] = N(null), g = R(null), k = R(null), w = O(() => [...a.favorites, ...s], [a, s]), C = O(() => new Map(w.map((t, u) => [t.id, Y(w.map((y) => y.name))[u] ?? null])), [w]), A = O(() => V(w, r), [w, r]), b = A[Math.min(v, Math.max(0, A.length - 1))];
-  M(() => g.current?.focus(), []), M(() => p(0), [r]), M(() => {
-    k.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
-  }, [v, A]), M(() => {
-    a.syncActions && q(e.workspacePath, a, s).catch((t) => f({ text: `Actions sync failed: ${x(t)}`, error: !0 }));
-  }, [e.workspacePath, a, s]);
-  const S = (t) => {
-    if (t)
-      try {
-        ie(t, l, a, (u) => f({ text: u, error: !0 })), e.close();
-      } catch (u) {
-        f({ text: x(u), error: !0 });
+function he({ host: e }) {
+  const [t] = k(() => V(e.storage)), [s] = k(() => Y(e.storage)), [c, o] = k(""), [l, d] = k(""), [b, g] = k(0), [f, w] = k(null), [u, y] = k(null), C = L(null), $ = L(null), j = L(null), N = F(() => [...t.favorites, ...s], [t, s]), S = F(() => {
+    const a = X(N.map((m) => m.name));
+    return new Map(N.map((m, v) => [m.id, a[v] ?? null]));
+  }, [N]), M = F(() => Q(N, c), [N, c]), n = M[Math.min(b, Math.max(0, M.length - 1))];
+  T(() => C.current?.focus(), []), T(() => g(0), [c]), T(() => {
+    j.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+  }, [b, M]), T(() => {
+    u ? $.current?.focus() : C.current?.focus();
+  }, [u]), T(() => {
+    t.syncActions && Z(e.workspacePath, t, s).catch((a) => w({ text: `Actions sync failed: ${E(a)}`, error: !0 }));
+  }, [e.workspacePath, t, s]);
+  const i = (a, m) => {
+    try {
+      me(a, m, t, (v) => w({ text: v, error: !0 })), e.close();
+    } catch (v) {
+      w({ text: E(v), error: !0 });
+    }
+  }, h = async (a, m) => {
+    try {
+      return await navigator.clipboard.writeText(K(a, m, t.commandMode)), w({ text: "Copied. Paste it into the current session.", error: !1 }), !0;
+    } catch (v) {
+      return w({ text: E(v), error: !0 }), !1;
+    }
+  }, A = (a, m, v) => {
+    a.launch === "same-session" !== m ? h(a, v).then((H) => H && e.close()) : i(a, v);
+  }, x = (a, m) => {
+    if (a) {
+      if (ee(a.command) && !l.trim()) {
+        y({ fav: a, alternate: m, value: "" });
+        return;
       }
-  }, j = async (t) => {
-    if (t)
-      try {
-        return await navigator.clipboard.writeText(I(t, l, a.commandMode)), f({ text: "Copied. Paste it into the current session.", error: !1 }), !0;
-      } catch (u) {
-        return f({ text: x(u), error: !0 }), !1;
-      }
-  }, n = (t, u) => {
-    if (!t) return;
-    t.launch === "same-session" !== u ? j(t).then((E) => E && e.close()) : S(t);
+      A(a, m, l);
+    }
+  }, R = () => {
+    if (!u) return;
+    const a = u.value.trim();
+    if (!a) return;
+    const { fav: m, alternate: v } = u;
+    y(null), d(a), A(m, v, a);
   };
-  return /* @__PURE__ */ h("div", { className: "at-root", onKeyDown: (t) => {
-    if (t.key === "Escape")
-      t.preventDefault(), e.close();
-    else if (t.key === "ArrowDown")
-      t.preventDefault(), p((u) => Math.min(u + 1, A.length - 1));
-    else if (t.key === "ArrowUp")
-      t.preventDefault(), p((u) => Math.max(u - 1, 0));
-    else if (t.key === "Enter")
-      t.preventDefault(), n(b, t.shiftKey);
-    else if (t.altKey && /^Key[A-Z]$/.test(t.code)) {
-      const u = w.find((y) => C.get(y.id) === t.code.slice(3).toLowerCase());
-      u && (t.preventDefault(), n(u, !1));
+  return /* @__PURE__ */ p("div", { className: "at-root", onKeyDown: (a) => {
+    if (!u) {
+      if (a.key === "Escape")
+        a.preventDefault(), e.close();
+      else if (a.key === "ArrowDown")
+        a.preventDefault(), g((m) => Math.min(m + 1, M.length - 1));
+      else if (a.key === "ArrowUp")
+        a.preventDefault(), g((m) => Math.max(m - 1, 0));
+      else if (a.key === "Enter")
+        a.preventDefault(), x(n, a.shiftKey);
+      else if (a.altKey && /^Key[A-Z]$/.test(a.code)) {
+        const m = N.find((v) => S.get(v.id) === a.code.slice(3).toLowerCase());
+        m && (a.preventDefault(), x(m, !1));
+      }
     }
   }, children: [
-    /* @__PURE__ */ i(
+    /* @__PURE__ */ r(
       "input",
       {
-        ref: g,
+        ref: C,
         className: "at-search",
         placeholder: "Search favorites…",
-        value: r,
-        onChange: (t) => o(t.target.value),
+        value: c,
+        onChange: (a) => o(a.target.value),
         "aria-label": "Search favorites"
       }
     ),
-    w.length === 0 ? /* @__PURE__ */ h("div", { className: "at-empty", children: [
+    N.length === 0 ? /* @__PURE__ */ p("div", { className: "at-empty", children: [
       "No favorites yet. Add them in Settings → Agent Toolkit.",
-      /* @__PURE__ */ i("button", { className: "at-btn", onClick: () => {
+      /* @__PURE__ */ r("button", { className: "at-btn", onClick: () => {
         e.close(), e.openSettings();
       }, children: "Open settings" })
-    ] }) : A.length === 0 ? /* @__PURE__ */ h("div", { className: "at-empty", children: [
+    ] }) : M.length === 0 ? /* @__PURE__ */ p("div", { className: "at-empty", children: [
       "Nothing matches “",
-      r,
+      c,
       "”."
-    ] }) : /* @__PURE__ */ i("ul", { ref: k, className: "at-list", role: "listbox", children: A.map((t, u) => {
-      const y = C.get(t.id);
-      return /* @__PURE__ */ h(
+    ] }) : /* @__PURE__ */ r("ul", { ref: j, className: "at-list", role: "listbox", children: M.map((a, m) => {
+      const v = S.get(a.id);
+      return /* @__PURE__ */ p(
         "li",
         {
           role: "option",
-          "aria-selected": t === b,
-          className: `at-item${t === b ? " at-on" : ""}`,
-          onMouseMove: () => p(u),
-          onClick: () => n(t, !1),
+          "aria-selected": a === n,
+          className: `at-item${a === n ? " at-on" : ""}`,
+          onMouseMove: () => g(m),
+          onClick: () => x(a, !1),
           children: [
-            /* @__PURE__ */ i("span", { className: "at-name", children: y ? /* @__PURE__ */ i(ue, { text: t.name, letter: y }) : t.name }),
-            /* @__PURE__ */ i("span", { className: "at-cmd", children: t.command }),
-            y && /* @__PURE__ */ h("kbd", { className: "at-kbd", children: [
+            /* @__PURE__ */ r("span", { className: "at-name", children: v ? /* @__PURE__ */ r(pe, { text: a.name, letter: v }) : a.name }),
+            /* @__PURE__ */ r("span", { className: "at-cmd", children: a.command }),
+            v && /* @__PURE__ */ p("kbd", { className: "at-kbd", children: [
               "⌥",
-              y.toUpperCase()
+              v.toUpperCase()
             ] })
           ]
         },
-        t.id
+        a.id
       );
     }) }),
-    /* @__PURE__ */ i(
+    /* @__PURE__ */ r(
       "input",
       {
         className: "at-args",
         placeholder: "Arguments (optional, replaces {args})",
         value: l,
-        onChange: (t) => d(t.target.value),
+        onChange: (a) => d(a.target.value),
         "aria-label": "Arguments"
       }
     ),
-    /* @__PURE__ */ i("div", { className: `at-foot${m?.error ? " at-err" : ""}`, children: m ? m.text : b?.launch === "same-session" ? "↵ copy (same session)   ⇧↵ new session   ⌥letter   esc close" : "↵ new session   ⇧↵ copy   ⌥letter   esc close" })
+    /* @__PURE__ */ r("div", { className: `at-foot${f?.error ? " at-err" : ""}`, children: f ? f.text : n?.launch === "same-session" ? "↵ copy   ⇧↵ new session   ⌥letter   esc close" : "↵ new session   ⇧↵ copy   ⌥letter   esc close" }),
+    u && /* @__PURE__ */ r("div", { className: "at-modal-backdrop", onMouseDown: () => y(null), children: /* @__PURE__ */ p(
+      "div",
+      {
+        className: "at-modal",
+        role: "dialog",
+        "aria-label": `Arguments for ${u.fav.name}`,
+        onMouseDown: (a) => a.stopPropagation(),
+        onKeyDown: (a) => {
+          a.key === "Escape" ? (a.preventDefault(), a.stopPropagation(), y(null)) : a.key === "Enter" && (a.preventDefault(), a.stopPropagation(), R());
+        },
+        children: [
+          /* @__PURE__ */ r("div", { className: "at-modal-title", children: u.fav.name }),
+          /* @__PURE__ */ r("div", { className: "at-cmd at-modal-cmd", children: u.fav.command }),
+          /* @__PURE__ */ r(
+            "input",
+            {
+              ref: $,
+              className: "at-search",
+              placeholder: "Arguments (required)",
+              value: u.value,
+              onChange: (a) => y({ ...u, value: a.target.value }),
+              "aria-label": "Arguments"
+            }
+          ),
+          /* @__PURE__ */ p("div", { className: "at-modal-actions", children: [
+            /* @__PURE__ */ r("button", { className: "at-btn", onClick: () => y(null), children: "Cancel" }),
+            /* @__PURE__ */ r("button", { className: "at-btn at-btn-primary", disabled: !u.value.trim(), onClick: R, children: u.fav.launch === "same-session" !== u.alternate ? "Copy" : "Run" })
+          ] })
+        ]
+      }
+    ) })
   ] });
 }
-function ue({ text: e, letter: a }) {
-  const s = e.toLowerCase().indexOf(a);
-  return s < 0 ? /* @__PURE__ */ i(P, { children: e }) : /* @__PURE__ */ h(P, { children: [
+function pe({ text: e, letter: t }) {
+  const s = e.toLowerCase().indexOf(t);
+  return s < 0 ? /* @__PURE__ */ r(W, { children: e }) : /* @__PURE__ */ p(W, { children: [
     e.slice(0, s),
-    /* @__PURE__ */ i("u", { children: e[s] }),
+    /* @__PURE__ */ r("u", { children: e[s] }),
     e.slice(s + 1)
   ] });
 }
-const $ = ["", "claude-code:sonnet", "claude-code:opus", "claude-code:haiku"];
-function de({ storage: e, workspacePath: a }) {
-  const [s, r] = N(() => U(e)), [o, l] = N(() => W(e)), [d, v] = N(null), [p, m] = N(null), f = R(void 0), g = [
+const D = ["", "claude-code:sonnet", "claude-code:opus", "claude-code:haiku"];
+function fe({ storage: e, workspacePath: t }) {
+  const [s, c] = k(() => V(e)), [o, l] = k(() => Y(e)), [d, b] = k(null), [g, f] = k(null), w = L(void 0), u = [
     ...s.favorites.map((n) => ({ ...n, scope: "all" })),
     ...o.map((n) => ({ ...n, scope: "project" }))
-  ], k = (n, c = !1) => v({ text: n, error: c }), w = (n, c) => {
-    r(n), l(c), oe(e, n).then(() => ce(e, c)).catch((t) => k(`Could not save: ${x(t)}`, !0)), window.clearTimeout(f.current), f.current = window.setTimeout(() => {
-      C(n, c);
+  ], y = (n, i = !1) => b({ text: n, error: i }), C = (n, i) => {
+    c(n), l(i), le(e, n).then(() => ue(e, i)).catch((h) => y(`Could not save: ${E(h)}`, !0)), window.clearTimeout(w.current), w.current = window.setTimeout(() => {
+      $(n, i);
     }, 600);
   };
-  M(() => () => window.clearTimeout(f.current), []);
-  const C = async (n = s, c = o, t = n.syncActions) => {
-    if (!a) return k("No project is open, so there is no ai-actions.md to write.", !0);
+  T(() => () => window.clearTimeout(w.current), []);
+  const $ = async (n = s, i = o, h = n.syncActions) => {
+    if (!t) return y("No project is open, so there is no ai-actions.md to write.", !0);
     try {
-      const u = await q(a, n, c, t);
-      k(u.changed ? `Updated ${u.path}` : "ai-actions.md is already up to date.");
-    } catch (u) {
-      k(`Sync failed: ${x(u)}`, !0);
+      const A = await Z(t, n, i, h);
+      y(A.changed ? `Updated ${A.path}` : "ai-actions.md is already up to date.");
+    } catch (A) {
+      y(`Sync failed: ${E(A)}`, !0);
     }
-  }, A = (n) => {
-    const c = ({ scope: t, ...u }) => u;
+  }, j = (n) => {
+    const i = ({ scope: h, ...A }) => A;
     return {
-      favorites: n.filter((t) => t.scope === "all").map(c),
-      project: n.filter((t) => t.scope === "project").map(c)
+      favorites: n.filter((h) => h.scope === "all").map(i),
+      project: n.filter((h) => h.scope === "project").map(i)
     };
-  }, b = (n) => {
-    const { favorites: c, project: t } = A(n);
-    w({ ...s, favorites: c }, t);
-  }, S = (n, c) => b(g.map((t) => t.id === n ? { ...t, ...c } : t)), j = (n, c) => {
-    if (n === c) return;
-    const t = [...g], u = t.findIndex((D) => D.id === n), y = t.findIndex((D) => D.id === c);
-    if (u < 0 || y < 0) return;
-    const [E] = t.splice(u, 1);
-    t.splice(y, 0, E), b(t);
+  }, N = (n) => {
+    const { favorites: i, project: h } = j(n);
+    C({ ...s, favorites: i }, h);
+  }, S = (n, i) => N(u.map((h) => h.id === n ? { ...h, ...i } : h)), M = (n, i) => {
+    if (n === i) return;
+    const h = [...u], A = h.findIndex((O) => O.id === n), x = h.findIndex((O) => O.id === i);
+    if (A < 0 || x < 0) return;
+    const [R] = h.splice(A, 1);
+    h.splice(x, 0, R), N(h);
   };
-  return /* @__PURE__ */ h("div", { className: "at-settings", children: [
-    /* @__PURE__ */ i("h2", { children: "Agent Toolkit" }),
-    /* @__PURE__ */ i("p", { className: "at-hint", children: "Favorites appear in the launcher (⌘⇧B) and, with sync on, in the composer's Actions menu as “★ name”. Sync runs for a project when this page or the launcher is opened there." }),
-    /* @__PURE__ */ i("h3", { children: "Favorites" }),
-    g.length === 0 && /* @__PURE__ */ i("div", { className: "at-hint", children: "None yet." }),
-    g.map((n) => /* @__PURE__ */ h(
+  return /* @__PURE__ */ p("div", { className: "at-settings", children: [
+    /* @__PURE__ */ r("h2", { children: "Agent Toolkit" }),
+    /* @__PURE__ */ p("p", { className: "at-hint", children: [
+      "Favorites appear in the launcher (⌘⇧B) and, with sync on, in the composer's Actions menu as “★ name”. Choosing one in Actions puts the command into the current session's input without sending it; you add to it and send yourself. In the launcher, a command with ",
+      "{args}",
+      " asks for arguments when none are typed. Sync runs for a project when this page or the launcher is opened there."
+    ] }),
+    /* @__PURE__ */ r("h3", { children: "Favorites" }),
+    u.length === 0 && /* @__PURE__ */ r("div", { className: "at-hint", children: "None yet." }),
+    u.map((n) => /* @__PURE__ */ p(
       "div",
       {
-        className: `at-row${p === n.id ? " at-dragging" : ""}`,
+        className: `at-row${g === n.id ? " at-dragging" : ""}`,
         draggable: !0,
-        onDragStart: () => m(n.id),
-        onDragEnd: () => m(null),
-        onDragOver: (c) => c.preventDefault(),
-        onDrop: () => p && j(p, n.id),
+        onDragStart: () => f(n.id),
+        onDragEnd: () => f(null),
+        onDragOver: (i) => i.preventDefault(),
+        onDrop: () => g && M(g, n.id),
         children: [
-          /* @__PURE__ */ i("span", { className: "at-grip", title: "Drag to reorder", "aria-hidden": !0, children: "⠿" }),
-          /* @__PURE__ */ i("input", { className: "at-input at-w-name", value: n.name, placeholder: "Name", onChange: (c) => S(n.id, { name: c.target.value }) }),
-          /* @__PURE__ */ i("input", { className: "at-input at-w-cmd", value: n.command, placeholder: "/command {args}", onChange: (c) => S(n.id, { command: c.target.value }) }),
-          /* @__PURE__ */ h("select", { className: "at-input", value: n.scope, onChange: (c) => S(n.id, { scope: c.target.value }), title: "Where it shows up", children: [
-            /* @__PURE__ */ i("option", { value: "all", children: "All projects" }),
-            /* @__PURE__ */ i("option", { value: "project", children: "This project" })
+          /* @__PURE__ */ r("span", { className: "at-grip", title: "Drag to reorder", "aria-hidden": !0, children: "⠿" }),
+          /* @__PURE__ */ r("input", { className: "at-input at-w-name", value: n.name, placeholder: "Name", onChange: (i) => S(n.id, { name: i.target.value }) }),
+          /* @__PURE__ */ r("input", { className: "at-input at-w-cmd", value: n.command, placeholder: "/command {args}", onChange: (i) => S(n.id, { command: i.target.value }) }),
+          /* @__PURE__ */ p("select", { className: "at-input", value: n.scope, onChange: (i) => S(n.id, { scope: i.target.value }), title: "Where it shows up", children: [
+            /* @__PURE__ */ r("option", { value: "all", children: "All projects" }),
+            /* @__PURE__ */ r("option", { value: "project", children: "This project" })
           ] }),
-          /* @__PURE__ */ h("select", { className: "at-input", value: n.launch, onChange: (c) => S(n.id, { launch: c.target.value }), title: "How the Actions menu runs it (the launcher always opens a new session)", children: [
-            /* @__PURE__ */ i("option", { value: "new-session", children: "new session" }),
-            /* @__PURE__ */ i("option", { value: "same-session", children: "same session" })
+          /* @__PURE__ */ p("select", { className: "at-input", value: n.launch, onChange: (i) => S(n.id, { launch: i.target.value }), title: "What Enter does in the launcher. The Actions menu always puts the command into the current session without sending it.", children: [
+            /* @__PURE__ */ r("option", { value: "new-session", children: "launcher: new session" }),
+            /* @__PURE__ */ r("option", { value: "same-session", children: "launcher: copy" })
           ] }),
-          /* @__PURE__ */ i("select", { className: "at-input", value: n.model, onChange: (c) => S(n.id, { model: c.target.value }), title: "Model override", children: ($.includes(n.model) ? $ : [...$, n.model]).map((c) => /* @__PURE__ */ i("option", { value: c, children: c || "inherit" }, c)) }),
-          /* @__PURE__ */ h("label", { className: "at-check", title: "Send immediately instead of leaving it in the composer", children: [
-            /* @__PURE__ */ i("input", { type: "checkbox", checked: n.autoSubmit, onChange: (c) => S(n.id, { autoSubmit: c.target.checked }) }),
-            " send"
-          ] }),
-          /* @__PURE__ */ h("label", { className: "at-check", title: "Run in a git worktree", children: [
-            /* @__PURE__ */ i("input", { type: "checkbox", checked: n.worktree, onChange: (c) => S(n.id, { worktree: c.target.checked }) }),
-            " worktree"
-          ] }),
-          /* @__PURE__ */ i("button", { className: "at-btn", "aria-label": `Delete ${n.name}`, onClick: () => b(g.filter((c) => c.id !== n.id)), children: "✕" })
+          /* @__PURE__ */ r("select", { className: "at-input", value: n.model, onChange: (i) => S(n.id, { model: i.target.value }), title: "Model for the launcher's new session (the Actions menu uses the current session's model)", children: (D.includes(n.model) ? D : [...D, n.model]).map((i) => /* @__PURE__ */ r("option", { value: i, children: i || "inherit" }, i)) }),
+          /* @__PURE__ */ r("button", { className: "at-btn", "aria-label": `Delete ${n.name}`, onClick: () => N(u.filter((i) => i.id !== n.id)), children: "✕" })
         ]
       },
       n.id
     )),
-    /* @__PURE__ */ h("div", { className: "at-actions", children: [
-      /* @__PURE__ */ i("button", { className: "at-btn", onClick: () => b([...g, { ...L(), scope: "all" }]), children: "+ Add favorite" }),
-      /* @__PURE__ */ i("button", { className: "at-btn", onClick: () => b([...g, ...J.map((n) => ({ ...L(n), scope: "all" }))]), children: "+ Add starter set" })
+    /* @__PURE__ */ p("div", { className: "at-actions", children: [
+      /* @__PURE__ */ r("button", { className: "at-btn", onClick: () => N([...u, { ...I(), scope: "all" }]), children: "+ Add favorite" }),
+      /* @__PURE__ */ r("button", { className: "at-btn", onClick: () => N([...u, ...ne.map((n) => ({ ...I(n), scope: "all" }))]), children: "+ Add starter set" })
     ] }),
-    /* @__PURE__ */ i("h3", { children: "Launcher" }),
-    /* @__PURE__ */ h("div", { className: "at-form", children: [
-      /* @__PURE__ */ h("label", { children: [
+    /* @__PURE__ */ r("h3", { children: "Launcher" }),
+    /* @__PURE__ */ p("div", { className: "at-form", children: [
+      /* @__PURE__ */ p("label", { children: [
         "Model for launcher sessions",
-        /* @__PURE__ */ i("select", { className: "at-input", value: s.launcherModel, onChange: (n) => w({ ...s, launcherModel: n.target.value }, o), children: ($.includes(s.launcherModel) ? $ : [...$, s.launcherModel]).map((n) => /* @__PURE__ */ i("option", { value: n, children: n || "provider default" }, n)) })
+        /* @__PURE__ */ r("select", { className: "at-input", value: s.launcherModel, onChange: (n) => C({ ...s, launcherModel: n.target.value }, o), children: (D.includes(s.launcherModel) ? D : [...D, s.launcherModel]).map((n) => /* @__PURE__ */ r("option", { value: n, children: n || "provider default" }, n)) })
       ] }),
-      /* @__PURE__ */ h("label", { children: [
+      /* @__PURE__ */ p("label", { children: [
         "Command mode",
-        /* @__PURE__ */ h("select", { className: "at-input", value: s.commandMode, onChange: (n) => w({ ...s, commandMode: n.target.value }, o), children: [
-          /* @__PURE__ */ i("option", { value: "slash", children: "/skill, sent as typed" }),
-          /* @__PURE__ */ i("option", { value: "natural", children: "natural language (“Run the … command”)" })
+        /* @__PURE__ */ p("select", { className: "at-input", value: s.commandMode, onChange: (n) => C({ ...s, commandMode: n.target.value }, o), children: [
+          /* @__PURE__ */ r("option", { value: "slash", children: "/skill, sent as typed" }),
+          /* @__PURE__ */ r("option", { value: "natural", children: "natural language (“Run the … command”)" })
         ] })
       ] }),
-      /* @__PURE__ */ h("label", { className: "at-check", children: [
-        /* @__PURE__ */ i(
+      /* @__PURE__ */ p("label", { className: "at-check", children: [
+        /* @__PURE__ */ r(
           "input",
           {
             type: "checkbox",
             checked: s.syncActions,
             onChange: (n) => {
-              const c = { ...s, syncActions: n.target.checked };
-              w(c, o);
+              const i = { ...s, syncActions: n.target.checked };
+              C(i, o);
             }
           }
         ),
@@ -388,32 +431,32 @@ function de({ storage: e, workspacePath: a }) {
         "Sync favorites into the Actions menu (nimbalyst-local/ai-actions.md)"
       ] })
     ] }),
-    /* @__PURE__ */ h("div", { className: "at-actions", children: [
-      /* @__PURE__ */ i("button", { className: "at-btn", onClick: () => {
-        C();
+    /* @__PURE__ */ p("div", { className: "at-actions", children: [
+      /* @__PURE__ */ r("button", { className: "at-btn", onClick: () => {
+        $();
       }, children: "Sync now" }),
-      /* @__PURE__ */ i("button", { className: "at-btn", onClick: () => {
-        C(s, o, !1);
+      /* @__PURE__ */ r("button", { className: "at-btn", onClick: () => {
+        $(s, o, !1);
       }, children: "Remove ★ entries from this project" })
     ] }),
-    d && /* @__PURE__ */ i("div", { className: `at-status${d.error ? " at-err" : ""}`, role: "status", children: d.text })
+    d && /* @__PURE__ */ r("div", { className: `at-status${d.error ? " at-err" : ""}`, role: "status", children: d.text })
   ] });
 }
-async function pe(e) {
-  B(e.services);
+async function ye(e) {
+  z(e.services);
 }
-async function fe() {
-  B(null);
+async function Ne() {
+  z(null);
 }
-const ge = {
-  launcher: { component: le }
-}, ve = {
-  ToolkitSettings: de
+const be = {
+  launcher: { component: he }
+}, Ae = {
+  ToolkitSettings: fe
 };
 export {
-  pe as activate,
-  fe as deactivate,
-  ge as panels,
-  ve as settingsPanel
+  ye as activate,
+  Ne as deactivate,
+  be as panels,
+  Ae as settingsPanel
 };
 //# sourceMappingURL=index.js.map

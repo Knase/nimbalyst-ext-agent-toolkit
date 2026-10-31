@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { syncActionsText, ownHeadings, renderFavorite } from '../actionsFile';
-import { assignLetters, buildPrompt, filterFavorites } from '../prompt';
+import { assignLetters, buildPrompt, filterFavorites, needsArgs } from '../prompt';
 import { newFavorite } from '../types';
 
 const fav = (name: string, command: string, extra = {}) => newFavorite({ name, command, ...extra });
@@ -53,6 +53,13 @@ describe('buildPrompt', () => {
   });
 });
 
+describe('needsArgs', () => {
+  it('is true only for an {args} slot', () => {
+    expect(needsArgs('/bmad-code-review {args}')).toBe(true);
+    expect(needsArgs('/compact')).toBe(false);
+  });
+});
+
 describe('filter and letters', () => {
   const items = [fav('Code review', '/bmad-code-review'), fav('Compact', '/compact'), fav('Sprint', '/sprint')];
   it('ranks name hits first and ignores misses', () => {
@@ -69,13 +76,13 @@ describe('syncActionsText', () => {
   const existing = `# AI Action Prompts\n\nintro\n\n## Mine\nDo my thing.\n\n## Code\n\`\`\`\n## not a heading\n\`\`\`\ntext\n`;
 
   it('appends owned sections and leaves the rest byte-identical', () => {
-    const next = syncActionsText(existing, [fav('Review', '/review {args}', { launch: 'same-session' })], 'slash')!;
+    const next = syncActionsText(existing, [fav('Review', '/review {args}', { launch: 'new-session', model: 'claude-code:opus', worktree: true, autoSubmit: true })], 'slash')!;
     expect(next.startsWith(existing.trimEnd())).toBe(true);
     const actions = parse(next);
     expect(actions.map((a) => a.label)).toEqual(['Mine', 'Code', '★ Review']);
     expect(actions[2]).toEqual({
       label: '★ Review',
-      config: { launch: 'same-session', foreground: 'true', autoSubmit: 'true', worktree: 'false' },
+      config: { launch: 'same-session', foreground: 'true', autoSubmit: 'false' },
       body: '/review',
     });
   });
@@ -101,12 +108,13 @@ describe('syncActionsText', () => {
     expect(syncActionsText(null, [fav('A', '/a')], 'slash')!.startsWith('## ★ A\n')).toBe(true);
   });
 
-  it('survives hostile bodies and bad models', () => {
-    const f = fav('Weird', 'first\n## injected\n```\n## inside fence\n```', { model: 'not a model' });
+  it('survives hostile bodies', () => {
+    const f = fav('Weird', 'first\n## injected\n```\n## inside fence\n```');
     const text = renderFavorite(f, 'slash')!;
     const actions = parse(text);
     expect(actions).toHaveLength(1);
     expect(actions[0]!.config).not.toHaveProperty('model');
+    expect(actions[0]!.config).not.toHaveProperty('worktree');
     expect(actions[0]!.body).toContain('### injected');
     expect(actions[0]!.body).toContain('## inside fence');
   });

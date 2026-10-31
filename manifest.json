@@ -1,7 +1,7 @@
 {
   "id": "dev.local.agent-toolkit",
   "name": "Agent Toolkit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Favorite agent commands: synced into the composer's Actions menu, a Cmd+Shift+B launcher, and one settings page.",
   "author": "Svyat",
   "main": "dist/index.js",

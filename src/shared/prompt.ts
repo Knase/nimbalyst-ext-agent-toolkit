@@ -72,3 +72,6 @@ export function assignLetters(names: string[]): Array<string | null> {
     return null;
   });
 }
+
+/** The command has an `{args}` slot, so running it with nothing typed should ask first. */
+export const needsArgs = (command: string): boolean => /\{args\}/.test(command);

@@ -80,7 +80,7 @@ export function ToolkitSettings({ storage, workspacePath }: SettingsPanelProps) 
     <div className="at-settings">
       <h2>Agent Toolkit</h2>
       <p className="at-hint">
-        Favorites appear in the launcher (⌘⇧B) and, with sync on, in the composer's Actions menu as “★ name”.
+        Favorites appear in the launcher (⌘⇧B) and, with sync on, in the composer's Actions menu as “★ name”. Choosing one in Actions puts the command into the current session's input without sending it; you add to it and send yourself. In the launcher, a command with {"{args}"} asks for arguments when none are typed.
         Sync runs for a project when this page or the launcher is opened there.
       </p>
 
@@ -103,15 +103,13 @@ export function ToolkitSettings({ storage, workspacePath }: SettingsPanelProps) 
             <option value="all">All projects</option>
             <option value="project">This project</option>
           </select>
-          <select className="at-input" value={r.launch} onChange={(e) => patchRow(r.id, { launch: e.target.value as LaunchMode })} title="How the Actions menu runs it (the launcher always opens a new session)">
-            <option value="new-session">new session</option>
-            <option value="same-session">same session</option>
+          <select className="at-input" value={r.launch} onChange={(e) => patchRow(r.id, { launch: e.target.value as LaunchMode })} title="What Enter does in the launcher. The Actions menu always puts the command into the current session without sending it.">
+            <option value="new-session">launcher: new session</option>
+            <option value="same-session">launcher: copy</option>
           </select>
-          <select className="at-input" value={r.model} onChange={(e) => patchRow(r.id, { model: e.target.value })} title="Model override">
+          <select className="at-input" value={r.model} onChange={(e) => patchRow(r.id, { model: e.target.value })} title="Model for the launcher's new session (the Actions menu uses the current session's model)">
             {(MODELS.includes(r.model) ? MODELS : [...MODELS, r.model]).map((m) => <option key={m} value={m}>{m || 'inherit'}</option>)}
           </select>
-          <label className="at-check" title="Send immediately instead of leaving it in the composer"><input type="checkbox" checked={r.autoSubmit} onChange={(e) => patchRow(r.id, { autoSubmit: e.target.checked })} /> send</label>
-          <label className="at-check" title="Run in a git worktree"><input type="checkbox" checked={r.worktree} onChange={(e) => patchRow(r.id, { worktree: e.target.checked })} /> worktree</label>
           <button className="at-btn" aria-label={`Delete ${r.name}`} onClick={() => setRows(rows.filter((x) => x.id !== r.id))}>✕</button>
         </div>
       ))}

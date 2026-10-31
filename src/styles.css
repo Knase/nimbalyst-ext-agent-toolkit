@@ -33,3 +33,12 @@
 .at-form label { display: flex; flex-direction: column; gap: 4px; }
 .at-form label.at-check { flex-direction: row; align-items: center; }
 .at-status { margin-top: 12px; color: var(--nim-text-muted); }
+
+.at-root { position: relative; }
+.at-btn-primary { background: var(--nim-primary); border-color: var(--nim-primary); color: var(--nim-on-primary, #fff); }
+.at-btn:disabled { opacity: .5; cursor: default; }
+.at-modal-backdrop { position: absolute; inset: 0; z-index: 10; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; }
+.at-modal { width: min(440px, 92%); display: flex; flex-direction: column; gap: 8px; padding: 14px; background: var(--nim-bg); border: 1px solid var(--nim-border); border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,.35); }
+.at-modal-title { font-weight: 600; }
+.at-modal-cmd { white-space: normal; }
+.at-modal-actions { display: flex; justify-content: flex-end; gap: 8px; }

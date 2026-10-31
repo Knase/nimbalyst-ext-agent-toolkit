@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PanelHostProps } from '@nimbalyst/extension-sdk';
-import { assignLetters, buildPrompt, filterFavorites } from '../shared/prompt';
+import { assignLetters, buildPrompt, filterFavorites, needsArgs } from '../shared/prompt';
 import type { Favorite, ToolkitSettings } from '../shared/types';
 import { errorText, launchNewSession, loadProjectFavorites, loadSettings, syncProject } from '../services';
 
@@ -11,11 +11,17 @@ export function LauncherPanel({ host }: PanelHostProps) {
   const [args, setArgs] = useState('');
   const [index, setIndex] = useState(0);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  /** A favorite with an {args} slot was triggered with nothing typed: ask for the arguments first. */
+  const [ask, setAsk] = useState<{ fav: Favorite; alternate: boolean; value: string } | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const askRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
   const all = useMemo(() => [...settings.favorites, ...project], [settings, project]);
-  const letters = useMemo(() => new Map(all.map((f, i) => [f.id, assignLetters(all.map((x) => x.name))[i] ?? null])), [all]);
+  const letters = useMemo(() => {
+    const assigned = assignLetters(all.map((x) => x.name));
+    return new Map(all.map((f, i) => [f.id, assigned[i] ?? null]));
+  }, [all]);
   const shown = useMemo(() => filterFavorites(all, query), [all, query]);
   const current = shown[Math.min(index, Math.max(0, shown.length - 1))];
 
@@ -24,6 +30,10 @@ export function LauncherPanel({ host }: PanelHostProps) {
   useEffect(() => {
     listRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
   }, [index, shown]);
+  useEffect(() => {
+    if (ask) askRef.current?.focus();
+    else searchRef.current?.focus();
+  }, [ask]);
 
   // Opening the launcher is the one moment this window's project is known and the user is here:
   // bring the project's ai-actions.md up to date with the favorites.
@@ -32,20 +42,18 @@ export function LauncherPanel({ host }: PanelHostProps) {
     syncProject(host.workspacePath, settings, project).catch((e) => setMessage({ text: `Actions sync failed: ${errorText(e)}`, error: true }));
   }, [host.workspacePath, settings, project]);
 
-  const run = (fav: Favorite | undefined) => {
-    if (!fav) return;
+  const run = (fav: Favorite, a: string) => {
     try {
-      launchNewSession(fav, args, settings, (m) => setMessage({ text: m, error: true }));
+      launchNewSession(fav, a, settings, (m) => setMessage({ text: m, error: true }));
       host.close();
     } catch (e) {
       setMessage({ text: errorText(e), error: true });
     }
   };
 
-  const copy = async (fav: Favorite | undefined) => {
-    if (!fav) return;
+  const copy = async (fav: Favorite, a: string): Promise<boolean> => {
     try {
-      await navigator.clipboard.writeText(buildPrompt(fav, args, settings.commandMode));
+      await navigator.clipboard.writeText(buildPrompt(fav, a, settings.commandMode));
       setMessage({ text: 'Copied. Paste it into the current session.', error: false });
       return true;
     } catch (e) {
@@ -54,15 +62,34 @@ export function LauncherPanel({ host }: PanelHostProps) {
     }
   };
 
-  /** A same-session favorite (`/compact`) means nothing in a fresh session: Enter copies it, ⇧↵ opens one anyway. */
+  const perform = (fav: Favorite, alternate: boolean, a: string) => {
+    // A same-session favorite (`/compact`) means nothing in a fresh session: Enter copies it, ⇧↵ opens one anyway.
+    const copyIt = (fav.launch === 'same-session') !== alternate;
+    if (copyIt) void copy(fav, a).then((ok) => ok && host.close());
+    else run(fav, a);
+  };
+
   const primary = (fav: Favorite | undefined, alternate: boolean) => {
     if (!fav) return;
-    const copyIt = (fav.launch === 'same-session') !== alternate;
-    if (copyIt) void copy(fav).then((ok) => ok && host.close());
-    else run(fav);
+    if (needsArgs(fav.command) && !args.trim()) {
+      setAsk({ fav, alternate, value: '' });
+      return;
+    }
+    perform(fav, alternate, args);
+  };
+
+  const submitAsk = () => {
+    if (!ask) return;
+    const value = ask.value.trim();
+    if (!value) return;
+    const { fav, alternate } = ask;
+    setAsk(null);
+    setArgs(value);
+    perform(fav, alternate, value);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
+    if (ask) return; // the argument prompt handles its own keys
     if (e.key === 'Escape') {
       e.preventDefault();
       host.close();
@@ -114,9 +141,7 @@ export function LauncherPanel({ host }: PanelHostProps) {
                 onMouseMove={() => setIndex(i)}
                 onClick={() => primary(f, false)}
               >
-                <span className="at-name">
-                  {letter ? <Highlight text={f.name} letter={letter} /> : f.name}
-                </span>
+                <span className="at-name">{letter ? <Highlight text={f.name} letter={letter} /> : f.name}</span>
                 <span className="at-cmd">{f.command}</span>
                 {letter && <kbd className="at-kbd">⌥{letter.toUpperCase()}</kbd>}
               </li>
@@ -135,9 +160,48 @@ export function LauncherPanel({ host }: PanelHostProps) {
         {message
           ? message.text
           : current?.launch === 'same-session'
-            ? '↵ copy (same session)   ⇧↵ new session   ⌥letter   esc close'
+            ? '↵ copy   ⇧↵ new session   ⌥letter   esc close'
             : '↵ new session   ⇧↵ copy   ⌥letter   esc close'}
       </div>
+
+      {ask && (
+        <div className="at-modal-backdrop" onMouseDown={() => setAsk(null)}>
+          <div
+            className="at-modal"
+            role="dialog"
+            aria-label={`Arguments for ${ask.fav.name}`}
+            onMouseDown={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                setAsk(null);
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                submitAsk();
+              }
+            }}
+          >
+            <div className="at-modal-title">{ask.fav.name}</div>
+            <div className="at-cmd at-modal-cmd">{ask.fav.command}</div>
+            <input
+              ref={askRef}
+              className="at-search"
+              placeholder="Arguments (required)"
+              value={ask.value}
+              onChange={(e) => setAsk({ ...ask, value: e.target.value })}
+              aria-label="Arguments"
+            />
+            <div className="at-modal-actions">
+              <button className="at-btn" onClick={() => setAsk(null)}>Cancel</button>
+              <button className="at-btn at-btn-primary" disabled={!ask.value.trim()} onClick={submitAsk}>
+                {(ask.fav.launch === 'same-session') !== ask.alternate ? 'Copy' : 'Run'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

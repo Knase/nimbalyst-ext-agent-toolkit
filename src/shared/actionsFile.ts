@@ -33,8 +33,6 @@ function split(text: string): Section[] {
 
 const isOwn = (s: Section): boolean => s.heading !== null && s.heading.startsWith(OWN_PREFIX);
 
-const MODEL_RE = /^[a-z][a-z0-9_-]*:\S+$/i;
-
 /** Body lines that would open a new action (`## x`) are demoted so the entry stays one entry. */
 function safeBody(body: string): string {
   let fenced = false;
@@ -47,14 +45,17 @@ function safeBody(body: string): string {
     .join('\n');
 }
 
+/**
+ * Actions entries always prefill the CURRENT session's composer and never submit:
+ * `launch: same-session`, `autoSubmit: false`. The user can add to the text and sends it
+ * themselves. No `model` (it would switch the session) and no `worktree` (needs a new session).
+ */
 export function renderFavorite(f: Favorite, mode: CommandMode): string | null {
   const name = f.name.replace(/\s+/g, ' ').trim();
-  // {args} has no meaning inside the Actions menu: it is filled in the launcher only.
+  // {args} has no meaning inside the Actions menu: the user types the rest in the composer.
   const body = buildPrompt(f, '', mode);
   if (!name || !body) return null;
-  const lines = [`## ${OWN_PREFIX} ${name}`, `launch: ${f.launch}`];
-  if (f.model && MODEL_RE.test(f.model.trim())) lines.push(`model: ${f.model.trim()}`);
-  lines.push('foreground: true', `autoSubmit: ${f.autoSubmit}`, `worktree: ${f.worktree}`, '', safeBody(body), '');
+  const lines = [`## ${OWN_PREFIX} ${name}`, 'launch: same-session', 'foreground: true', 'autoSubmit: false', '', safeBody(body), ''];
   return lines.join('\n');
 }
 
